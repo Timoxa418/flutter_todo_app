@@ -24,8 +24,6 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
 
-
-
     todoList.addAll(['buy milk', 'купить картошку']);
 
   }
@@ -64,68 +62,66 @@ class _HomeState extends State<Home> {
           ),                  
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('items').snapshots(), 
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if(!snapshot.hasData) return Text('Нет записей');
-          return ListView.builder(
-              itemCount: snapshot.data?.docs.length,
-              itemBuilder: (BuildContext context, int index,){
+      body: ListView.builder(
+              itemCount: todoList.length,
+              itemBuilder: (BuildContext context, int index){
                 return Dismissible(
-                   key: Key(snapshot.data!.docs[index].id),
+                   key: Key(todoList[index]),
                    child: Card(
                      child: ListTile(
-                    title: Text(snapshot.data?.docs[index].get('item')),
+                    title: Text(todoList[index]),
                     trailing: IconButton(
                       icon: Icon(
                         Icons.delete_sweep,
                         color: Colors.black,
                       ),
                     onPressed: () {
-                      FirebaseFirestore.instance.collection('items').doc(snapshot.data?.docs[index].id).delete();
-
+                      setState(() {
+                        todoList.removeAt(index);
+                      });
                     },
                   ),    
                 ),
               ),
               onDismissed: (diraction){
-                FirebaseFirestore.instance.collection('items').doc(snapshot.data?.docs[index].id).delete();
+                setState(() {
+                        todoList.removeAt(index);
+                });
               },
+
             );
-            }
-        ); 
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        onPressed:() {
-          showDialog(context: context, builder: (BuildContext context){
+          }
+        ),
+    floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.green,
+      onPressed:() {
+        showDialog(context: context, builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Добавить элимент'),
             content: TextField(
-              onChanged: (String value){
+              onChanged: (String value) {
                 user = value;
-              }
+              },
             ),
             actions: [
-              ElevatedButton(
-                onPressed: () {
-                  FirebaseFirestore.instance.collection('items').add({'item': user});
-
-                  Navigator.of(context).pop();
+              ElevatedButton(onPressed:(){
+                setState(() {
+                  todoList.add(user);
+                });
                   
-                }, 
-                child: Text('Добавить'))
+                  Navigator.of(context).pop();
+                }, child: Text('Добавить'))
             ],
           );
-
-          });
-      },
-        child: Icon(
-          Icons.add_box,
-          color: Colors.white,
-        )
-      ),
+        });
+    },
+      child: Icon(
+        Icons.add_box,
+        color: Colors.white,
+      )
+    ),
     );
+
   }
+  
 }
